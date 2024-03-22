@@ -1,14 +1,44 @@
-import { StyleSheet, Text, View, TouchableOpacity, Dimensions,ScrollView,Linking } from 'react-native'
-import React, { useState } from 'react'
+import { StyleSheet, Text, View, TouchableOpacity, Dimensions, ScrollView, Linking ,FlatList} from 'react-native'
+import React, { useState, useEffect } from 'react'
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import COLORS from '../constants/color';
 import { useNavigation } from '@react-navigation/native';
 import { Image } from 'react-native-elements';
+import TOKEN from '../Token/Token';
 
 const { width } = Dimensions.get('window');
+const token = TOKEN;
+export default function HospitalToProfile({ route }) {
+    const { ownerId, businessName } = route.params;
+    const [ownersData, setOwnersData] = useState('')
+    useEffect(() => {
+        if (ownerId) {
+            fetchOwnerData(ownerId);
+        } else {
+            console.error('Owner ID is missing');
+        }
+    }, [ownerId]);
 
-export default function HospitalToProfile() {
+    const fetchOwnerData = async (ownerId) => {
+        try {
+            const response = await fetch(`https://apimediator.mimamsalabs.com/api/ClientConnect/MyProfileById?Id=${ownerId}`, {
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            const data = await response.json();
+            console.log('Owner Data:', data);
+            setOwnersData(data)
+            // Process the fetched data as needed
+            console.log();
+        } catch (error) {
+            console.error('Error fetching owner data:', error);
+        }
+    };
+
+
     const navigation = useNavigation();
     const [selectedIcon, setSelectedIcon] = useState('home');
     const navigateToScreen = (screenName, icon) => {
@@ -16,8 +46,7 @@ export default function HospitalToProfile() {
         navigation.navigate(screenName, { icon });
     };
 
-    const handleCall = () => {
-        const phoneNumber = '+915445514875'; 
+    const handleCall = (phoneNumber) => {
         Linking.openURL(`tel:${phoneNumber}`);
     };
     return (
@@ -34,22 +63,34 @@ export default function HospitalToProfile() {
             </View>
             <ScrollView>
                 <View style={styles.bannerImage}>
-                    <Image
-                        source={require('../assets/banner.jpg')}
-                        style={styles.image}
-                        resizeMode="cover"
-                    />
+                    {ownersData && ownersData.data && ownersData.data.photos ? (
+                        ownersData.data.photos.map((photo, index) => {
+                            if (photo.category === "Banner") {
+                                return (
+                                    <Image
+                                        key={index}
+                                        source={{ uri: photo.imgAddress }}
+                                        style={styles.image}
+                                        resizeMode="cover"
+                                    />
+                                );
+                            }
+                        })
+                    ) : null}
                     <View style={styles.overlay}>
-                        <Image
-                            source={require('../assets/1_YMJDp-kqus7i-ktWtksNjg.jpg')}
-                            style={styles.roundImage}
-                            resizeMode="cover"
-                        />
+                        {ownersData && ownersData.data && ownersData.data.profileImg ? ( // Add conditional check
+                            <Image
+                                source={{ uri: ownersData.data.profileImg }}
+                                style={styles.roundImage}
+                                resizeMode="cover"
+                            />
+                        ) : null}
                     </View>
                 </View>
+
                 <View style={styles.HospitalNameContainer}>
                     <Text style={styles.hospitalName}>
-                        Maha Pandit Rahul Sanskratiy District Female Hospital
+                        {businessName}
                     </Text>
                 </View>
 
@@ -58,49 +99,77 @@ export default function HospitalToProfile() {
                     <Text style={{ color: COLORS.darkGrey, fontSize: 15, lineHeight: 25, fontWeight: 'bold', paddingBottom: 6, color: 'grey', marginTop: 0 }}>
                         About
                     </Text>
-                    <View style={{ flexDirection: 'row' }}>
-                        <Text style={{ color: '#606060', fontSize: 12, lineHeight: 16, fontWeight: 400 }}>
-                            Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.
-                        </Text>
-                    </View>
+                    {ownersData && ownersData.data && ownersData.data.about ? (
+                        <View style={{ flexDirection: 'row' }}>
+                            <Text style={{ color: '#606060', fontSize: 12, lineHeight: 16, fontWeight: 400 }}>
+                                {ownersData.data.about}
+                            </Text>
+                        </View>
+                    ) : (
+                        <Text>No information available</Text>
+                    )}
                 </View>
+
 
                 <View style={styles.event}>
                     <Text style={{ color: COLORS.darkGrey, fontSize: 15, lineHeight: 25, fontWeight: 'bold', paddingBottom: 6, color: 'grey', marginTop: 0 }}>
                         Contact & Address
                     </Text>
-                    <View style={{ flexDirection: 'row', paddingTop: 15, color: "black" }}>
-                        <Text style={{ color: '#606060', fontSize: 15, lineHeight: 16, fontWeight: '400' }}>
-                            <Icon name="phone" size={15} color="black" /> +91 5445514875
-                        </Text>
-                        <TouchableOpacity onPress={handleCall}>
-                        <View style={styles.callContainer}><Text style={styles.callBox}><Icon name="phone" size={15} color='white' />  Call</Text></View>
-                        </TouchableOpacity>
-                    </View>
-                    <View style={{ flexDirection: 'row', paddingTop: 15 }}>
-                        <Icon name="envelope" size={15} color="black" />
-                        <Text style={{ color: 'black' }}> ddindex56@gmail.com</Text>
-                    </View>
-
-                    <View style={{ flexDirection: 'row', paddingTop: 15 }}>
-                        <Icon name="map-marker" size={15} color="black" />
-                        <Text style={{ color: 'black' }}> Ailwal, Azamgarh, Uttar Pradesh</Text>
-                    </View>
+                    {ownersData && ownersData.data ? (
+                        <View>
+                            <View style={{ flexDirection: 'row', paddingTop: 15, color: "black" }}>
+                                <Text style={{ color: '#606060', fontSize: 15, lineHeight: 16, fontWeight: '400' }}>
+                                    <Icon name="phone" size={15} color="black" /> {ownersData.data.mobileNumber}
+                                </Text>
+                                <TouchableOpacity onPress={() => handleCall(ownersData.data.mobileNumber)}>
+                                    <View style={styles.callContainer}>
+                                        <Text style={styles.callBox}><Icon name="phone" size={15} color='white' />  Call</Text>
+                                    </View>
+                                </TouchableOpacity>
+                            </View>
+                            <View style={{ flexDirection: 'row', paddingTop: 15 }}>
+                                <Icon name="envelope" size={15} color="black" />
+                                <Text style={{ color: 'black' }}> {ownersData.data.emailAddress}</Text>
+                            </View>
+                            <View style={{ flexDirection: 'row', paddingTop: 15 }}>
+                                <Icon name="map-marker" size={15} color="black" />
+                                <View style={{ flexDirection: 'column' }}>
+                                    <Text style={{ color: 'black' }}> {ownersData.data.businessAddress},{ownersData.data.district},{ownersData.data.state}</Text>
+                                    <Text style={{ color: 'black', marginTop: -10 }}>{'\n'}{ownersData.data.pinCode}</Text>
+                                </View>
+                            </View>
+                        </View>
+                    ) : (
+                        <Text>No contact information available</Text>
+                    )}
                 </View>
+
 
                 <View style={styles.event}>
                     <Text style={{ color: COLORS.darkGrey, fontSize: 15, lineHeight: 25, fontWeight: 'bold', paddingBottom: 6, color: 'grey', marginTop: 0 }}>
                         Photos
                     </Text>
-                    <View style={styles.photos}>
-                    <Image
-                        source={require('../assets/banner.jpg')}
-                        style={styles.imageFooter}
-                        resizeMode="cover"
-                    />
-                    </View>
+                    <ScrollView horizontal={true}>
+                        {ownersData && ownersData.data && ownersData.data.photos ? (
+                            ownersData.data.photos.map((photo, index) => {
+                                if (photo.category === 'Gallery') {
+                                    return (
+                                        <View key={index} style={styles.photos}>
+                                            <Image
+                                                source={{ uri: photo.imgAddress }}
+                                                style={styles.imageFooter}
+                                                resizeMode="cover"
+                                            />
+                                        </View>
+                                    );
+                                }
+                                return null;
+                            })
+                        ) : null}
+                    </ScrollView>
                 </View>
-                </ScrollView>
+
+            </ScrollView>
 
         </View>
     )
@@ -135,7 +204,7 @@ const styles = StyleSheet.create({
     },
     image: {
         width: width * 1, // Adjust width as needed
-        height: 150, // Adjust height as needed
+        height: 160, // Adjust height as needed
         marginBottom: 12,
     },
     overlay: {
@@ -182,7 +251,7 @@ const styles = StyleSheet.create({
     },
     callBox: {
         // paddingRight:1,
-        marginLeft: 140,
+        marginLeft: 165,
         color: COLORS.white,
         height: 30,
         width: 70,
@@ -193,10 +262,13 @@ const styles = StyleSheet.create({
         paddingTop: 5,
         marginTop: -10
     },
-    imageFooter:{
-        width:width*1,
-        height:200,
-        paddingRight:15
+    imageFooter: {
+        width: width * 1,
+        height: 200,
+        paddingRight: 25
+    },
+    photos: {
+        marginRight: 15
     }
 
 })
