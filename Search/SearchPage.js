@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
         borderColor: COLORS.blue,
         borderRadius: 5,
         paddingTop: 8,
-        marginLeft: 52,
+        marginLeft: width * 0.115,
         marginTop: 5,
         alignItems: 'center',
         justifyContent: 'center',
