@@ -33,7 +33,7 @@ const AdministratorDirect = ({ route }) => {
         }
       });
       const responseData = await response.json();
-      console.log('Response Data:', responseData); // Log entire response data
+      console.log('Response Data:', responseData); 
       if (!responseData.didError) {
         setTelephoneData(responseData.data);
       } else {
@@ -46,8 +46,6 @@ const AdministratorDirect = ({ route }) => {
 
   return (
     <View style={styles.container}>
-      {/* <Text style={styles.header}>{categoryName}</Text> */}
-
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigateToScreen('Administrator')}>
           <Ionicons name="arrow-back" size={30} color="black" />
@@ -136,6 +134,7 @@ const styles = StyleSheet.create({
     marginTop:-7
   },
   headerText: {
+    color:'#696969',
     fontSize: 18,
     fontWeight: 'bold',
   },
@@ -145,10 +144,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     shadowColor: '#000',
     shadowOpacity: 1,
-    // shadowOffset: {
-    //   width: 4,
-    //   height: 4
-    // },
     shadowRadius: 7,
     marginTop: 15,
     marginLeft: 15,
