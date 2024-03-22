@@ -17,7 +17,7 @@ export default function Administrator() {
   const [selectedIcon, setSelectedIcon] = useState(null);
   const navigation = useNavigation();
   const [responseData, setResponseData] = useState(null);
-  
+
 
   const navigateToScreen = (screenName, params = {}) => {
     setSelectedIcon(params?.icon || 'home'); // Keep icon handling logic
@@ -30,19 +30,19 @@ export default function Administrator() {
   const [emergencyNumbers] = useState([
     { name: 'Ambulance', number: '102' },
     { name: 'Fire Station', number: '101' },
-    { name: 'Women Helpline', number: '1090' },
+    { name: 'Women Help', number: '1090' },
     { name: 'Police', number: '100' },
 
   ]);
   const cardColors = ['blue', 'red', 'purple', '#45aaf2'];
 
-  const [selectedValue, setSelectedValue] = useState(14);
+  const [selectedValue, setSelectedValue] = useState(8);
   const [districts, setDistricts] = useState([]);
   const [location, setLocation] = useState('Gautam Buddha Nagar')
 
   useEffect(() => {
     fetchDistricts();
-  }, [selectedValue,location]);
+  }, [selectedValue, location]);
 
   const fetchDistricts = async () => {
     try {
@@ -50,7 +50,7 @@ export default function Administrator() {
       const response = await fetch(`https://apimediator.mimamsalabs.com/api/ClientConnect/Administrator?districtId=${selectedValue}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json' 
+          'Content-Type': 'application/json'
         }
       });
       const responseData = await response.json();
@@ -71,7 +71,7 @@ export default function Administrator() {
       console.error('Error fetching districts:', error);
     }
   };
-  
+
   const handlePickerChange = (value) => {
     const selectedDistrict = districts.find(district => district.id.toString() === value);
     if (selectedDistrict) {
@@ -80,9 +80,9 @@ export default function Administrator() {
       setLocation(selectedDistrict.district);
     }
   };
-  
+
   // console.log("Districts:", districts);
-  
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -90,8 +90,8 @@ export default function Administrator() {
           <Ionicons name="arrow-back" size={30} color="black" />
         </TouchableOpacity>
         <Text style={styles.headerContainer}>
-        <Text style={[styles.headerText,{color:'black'}]}>Administrator</Text>
-        <Text style={styles.location}>{'\n'}{location}</Text>
+          <Text style={[styles.headerText, { color: 'black' }]}>Administrator</Text>
+          <Text style={styles.location}>{'\n'}{location}</Text>
         </Text>
       </View>
 
@@ -104,7 +104,7 @@ export default function Administrator() {
               style={[styles.card, styles.elevatedCards, { backgroundColor: cardColors[index % cardColors.length] }, { marginLeft: 0 }]}
               onPress={() => handleCall(emergencyNumber.number)}
             >
-              <Text style={{ color: 'white', fontSize: 14, fontFamily: 'sans-serif', paddingBottom: 4,fontWeight:'bold' }}>
+              <Text style={{ color: 'white', fontSize: 14, fontFamily: 'sans-serif', paddingBottom: 4, fontWeight: 'bold' }}>
                 {emergencyNumber.number}
               </Text>
               <Text style={{ color: 'white', fontSize: 10, fontFamily: 'sans-serif' }}>
@@ -115,40 +115,38 @@ export default function Administrator() {
         </ScrollView>
       </View>
 
-
       <Picker
-  style={[styles.input]}
-  selectedValue={selectedValue}
-  onValueChange={handlePickerChange}
-  mode="dialog" // Ensure the dropdown mode
-  dropdownIconColor="black" // Set the color of the dropdown icon
->
-  <Picker.Item style={{ color: 'black' }} label="Gautam Buddha Nagar" value="" />
-  {districts.map(district => (
-    <Picker.Item style={{color:'black'}} key={district.id} label={district.district} value={district.id.toString()} />
-  ))}
-</Picker>
+        style={[styles.input]}
+        selectedValue={selectedValue}
+        onValueChange={handlePickerChange}
+        mode="dialog" // Ensure the dropdown mode
+        dropdownIconColor="black" // Set the color of the dropdown icon
+      >
+        {districts.map(district => (
+          <Picker.Item style={styles.districtOptions} key={district.id} label={district.district} value={district.id.toString()} />
+        ))}
+      </Picker>
 
       {responseData && (
-  <View style={styles.event}>
-    {responseData.data.directories.map(directory => (
-      <TouchableOpacity 
-      key={directory.id} 
-      onPress={() => {
-        navigateToScreen('AdministratorDirect', { categoryId: directory.id, categoryName:directory.categoryName });
-      }}
-    >            
-        <Feather name="chevron-right" size={24} style={[styles.arrow, { position: 'absolute', right: -28, top: 12 }]} />
-        <Text style={{color:'#696969', borderBottomWidth: 1, borderBottomColor: 'rgba(112, 112, 112, 0.18)', fontSize: 18, lineHeight: 25, fontWeight: 500, paddingBottom: 12, marginTop: 18 }}>
-          {directory.categoryName}
-        </Text>
-      </TouchableOpacity>
-    ))}
-    {responseData.data.directories.length > 0 && (
-      console.log("Directory IDs:", responseData.data.directories.map(directory => directory.id))
-    )}
-  </View>
-)}
+        <View style={styles.event}>
+          {responseData.data.directories.map(directory => (
+            <TouchableOpacity
+              key={directory.id}
+              onPress={() => {
+                navigateToScreen('AdministratorDirect', { categoryId: directory.id, categoryName: directory.categoryName });
+              }}
+            >
+              <Feather name="chevron-right" size={24} style={[styles.arrow, { position: 'absolute', right: -28, top: 12 }]} />
+              <Text style={{ color: '#696969', borderBottomWidth: 1, borderBottomColor: 'rgba(112, 112, 112, 0.18)', fontSize: 18, lineHeight: 25, fontWeight: 500, paddingBottom: 12, marginTop: 18 }}>
+                {directory.categoryName}
+              </Text>
+            </TouchableOpacity>
+          ))}
+          {responseData.data.directories.length > 0 && (
+            console.log("Directory IDs:", responseData.data.directories.map(directory => directory.id))
+          )}
+        </View>
+      )}
 
 
 
@@ -204,23 +202,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    height: 60, 
+    height: 60,
   },
-  headerContainer:{
-    paddingTop:-2,
-    paddingLeft:4
+  headerContainer: {
+    paddingTop: -2,
+    paddingLeft: 4
   },
   headerText: {
     fontSize: 18,
     fontWeight: 'bold',
-    paddingTop:-40,
+    paddingTop: -40,
   },
-  location:{
-    color:'#696969',
-    position:'relative',
-    paddingTop:15,
-    marginLeft:40,
-    fontSize:12
+  location: {
+    color: '#696969',
+    position: 'relative',
+    paddingTop: 15,
+    marginLeft: 40,
+    fontSize: 12
   },
   backButton: {
     marginRight: 16,
@@ -306,4 +304,8 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 15,
     paddingTop: -3
   },
+  districtOptions:{
+    color:'black',
+    backgroundColor:'white'
+  }
 });
