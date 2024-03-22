@@ -5,6 +5,10 @@ import COLORS from '../constants/color';
 import { useNavigation } from '@react-navigation/native';
 import { Picker } from '@react-native-picker/picker';
 import TOKEN from '../Token/Token';
+import { color } from 'react-native-elements/dist/helpers';
+const { width } = Dimensions.get('window');
+
+const window = Dimensions.get('window');
 
 export default function WomenHospital({ route }) {
     const itemName = route.params?.itemName;
@@ -14,13 +18,17 @@ export default function WomenHospital({ route }) {
     const [drawerAnimation] = useState(new Animated.Value(Dimensions.get('window').height));
     const [drawerVisible, setDrawerVisible] = useState(false);
     const [chosenDistrictName, setChosenDistrictName] = useState('Gautam Buddha Nagar');
+    const [totalCount, setTotalCount] = useState(0);
 
     const navigation = useNavigation();
     const token = TOKEN;
 
-    const navigateToScreen = (screenName, icon) => {
-        navigation.navigate(screenName, { icon });
+
+    const navigateToScreen = (screenName, ownerId, businessName) => {
+        navigation.navigate(screenName, { ownerId, businessName });
     };
+
+
 
     useEffect(() => {
         fetchDistrictsData(); // Fetch districts data when the component mounts
@@ -35,7 +43,7 @@ export default function WomenHospital({ route }) {
                 },
             });
             const data = await response.json();
-            console.log('Fetched Districts Data:', data.data.districts.map(district => district.districtName));
+
 
             if (!data.didError) {
                 setDistricts(data.data.districts);
@@ -74,6 +82,7 @@ export default function WomenHospital({ route }) {
             const data = await response.json();
             if (!data.didError) {
                 setOwnersData(data.data.owners);
+                setTotalCount(data.data.totalCount);
             } else {
                 console.error('Error fetching owners data:', data.message);
             }
@@ -104,25 +113,30 @@ export default function WomenHospital({ route }) {
                         selectedValue={selectedLocation}
                         onValueChange={(itemValue, itemIndex) => {
                             setSelectedLocation(itemValue);
-                            const chosenDistrict = districts.find(district => district.id === itemValue);
-                            setChosenDistrictName(districts.districtName);
-                            console.log("District Name Is :- ",districts.find(district => district.id === itemValue));
+                            // Find the district with the corresponding ID
+                            const chosenDistrict = districts.find(district => district.id.toString() === itemValue);
+                            // Set the chosen district name
+                            if (chosenDistrict) {
+                                setChosenDistrictName(chosenDistrict.districtName);
+                            }
                             fetchOwnersData(itemValue);
                         }}
                         style={styles.picker}
                     >
                         {districts.map((district) => (
-                            <Picker.Item key={district.id} label={district.districtName} value={district.id.toString()} />
+                            <Picker.Item style={styles.districtOptions} key={district.id} label={district.districtName} value={district.id.toString()}  />
                         ))}
                     </Picker>
+
                     {selectedLocation && (
                         <View style={styles.districtData}>
-                            <Text>Data for {selectedLocation}</Text>
-                            {ownersData.length > 0 ? (
+                            <Text style={{color:'black'}}>Data for {selectedLocation}</Text>
+                            {/* {ownersData.length > 0 ? (
                                 <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
                                     {ownersData.map((owner) => (
                                         <View key={owner.id} style={styles.event}>
-                                            <TouchableOpacity onPress={() => navigateToScreen('HospitalToProfile')}>
+                                            <TouchableOpacity onPress={() => navigateToScreen('HospitalToProfile', { ownerId: owner.id, hospitalName: owner.businessName })}>
+
                                                 <View style={styles.HospitalContainer}>
                                                     <Image
                                                         source={{ uri: owner.thumbnailAddress }} // Use dynamic image URL from API response
@@ -147,7 +161,7 @@ export default function WomenHospital({ route }) {
                                 </ScrollView>
                             ) : (
                                 <Text>No owners found in {selectedLocation}</Text>
-                            )}
+                            )} */}
                         </View>
                     )}
                 </Animated.View>
@@ -178,13 +192,16 @@ export default function WomenHospital({ route }) {
                 </TouchableOpacity>
             </View>
 
+
             {renderDrawer()}
             <ScrollView contentContainerStyle={styles.scrollViewContent}>
-                <Text style={[{ marginTop: 15, marginBottom: -15, marginLeft: 15, color: COLORS.darkGrey, fontWeight: 'bold' }]}>23 Women's Hospital Found</Text>
+                <Text style={[{ marginTop: 15, marginBottom: -15, marginLeft: 15, color: COLORS.darkGrey, fontWeight: 'bold' }]}>{totalCount} Women's Hospital Found</Text>
                 {/* Render event data dynamically */}
                 {ownersData.map((owner) => (
                     <View key={owner.id} style={styles.event}>
-                        <TouchableOpacity onPress={() => navigateToScreen('HospitalToProfile')}>
+                        <TouchableOpacity key={owner.id} onPress={() => navigateToScreen('HospitalToProfile', owner.id, owner.businessName)}>
+
+
                             <View style={styles.HospitalContainer}>
                                 <Image
                                     source={{ uri: owner.thumbnailAddress }} // Use dynamic image URL from API response
@@ -241,7 +258,7 @@ const styles = StyleSheet.create({
         borderColor: COLORS.blue,
         borderRadius: 5,
         paddingTop: 8,
-        marginLeft: 150,
+        marginLeft: width * 0.39,
         marginTop: 5,
         alignItems: 'center',
         justifyContent: 'center',
@@ -378,6 +395,9 @@ const styles = StyleSheet.create({
         borderWidth: 8,
         borderRadius: 15,
         elevation: 15
-
     },
+    districtOptions:{
+        color:'black',
+        backgroundColor:'white'
+      }
 });
